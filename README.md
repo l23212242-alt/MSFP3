@@ -309,7 +309,7 @@ La sintonización del controlador PI se realizó mediante **PID Tuner**. La capt
 | $K_i$ | $41303.6113$ |
 | $K_d$ | No aplica (PI) |
 
-![Parámetros y respuesta del controlador PI](Captura%20PI.png)
+![Parámetros y respuesta del controlador PI]
 
 En la respuesta **Tuned** de la captura se reportan aproximadamente $0.000583\,\mathrm{s}$ de tiempo de subida, $0.00102\,\mathrm{s}$ de establecimiento y $0.108\%$ de sobreimpulso, con estabilidad de lazo cerrado indicada como *Stable*. Estos indicadores corresponden a la respuesta de sintonización mostrada en la herramienta, no a una medición fisiológica.
 
