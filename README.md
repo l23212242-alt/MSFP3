@@ -1,6 +1,6 @@
 [![Open in MATLAB Online](https://www.mathworks.com/images/responsive/global/open-in-matlab-online.svg)](https://matlab.mathworks.com/open/github/v1?repo=l23212242-alt/MSFP3)
 
-# Práctica 3 — Modelo y control del sistema musculoesquelético
+# Práctica 3: Modelado y control del sistema musculoesquelético
 
 Repositorio académico de **Modelado de Sistemas Fisiológicos**, correspondiente a **Ingeniería Biomédica** del Tecnológico Nacional de México / Instituto Tecnológico de Tijuana. La práctica aborda la representación de un sistema musculoesquelético mediante una analogía eléctrica, la obtención de su modelo matemático, el análisis de estabilidad y la comparación de un individuo de referencia con un caso de **atrofia muscular simulada**. Se incorpora un controlador **PI** y se reproducen las respuestas mediante MATLAB/Simulink y Python.
 
@@ -104,7 +104,7 @@ La interpretación fisiológica se centra en las propiedades pasivas del múscul
 
 El diagrama biológico distingue el **individuo sano** del **caso de atrofia muscular simulada**. En el segundo se representa un músculo de menor volumen; en la simulación la diferencia entre ambos casos se introduce aumentando $R$, sin afirmar que esa resistencia constituya una medición clínica directa de atrofia.
 
-![Modelo musculoesquelético: individuo sano y atrofia muscular simulada](Biorender U4.jpeg)
+![Modelo musculoesquelético: individuo sano y atrofia muscular simulada](Biorender%20U4.jpeg)
 
 | Símbolo | Elemento del modelo | Interpretación |
 |---|---|---|
@@ -155,13 +155,13 @@ $$
 \boxed{G(s)=\frac{F_s(s)}{F(s)}=\frac{C_gRs+1-\alpha}{R(C_p+C_g)s+1}}.
 $$
 
-El código Python entregado implementa el numerador como `R * 1e-6` y `1 - alpha`, es decir:
+El código Python entregado implementa el numerador como `R * C2` y `0.75`, con `C2=10e-6` y $1-\alpha=0.75$, es decir:
 
 $$
-G_{\mathrm{Python}}(s)=\frac{R(10^{-6})s+(1-\alpha)}{R(C_p+C_g)s+1}.
+G_{\mathrm{Python}}(s)=\frac{R C_g s+(1-\alpha)}{R(C_p+C_g)s+1}.
 $$
 
-**Nota de consistencia:** el factor $10^{-6}$ usado en el numerador del programa no coincide con el valor declarado $C_g=10\times10^{-6}\,\mathrm{F}$. Se presentan ambas expresiones tal como aparecen en los materiales; antes de declarar una equivalencia exacta entre el análisis manuscrito y el código es necesario verificar cuál es la expresión definitiva utilizada en Simulink.
+En el archivo Python revisado, `C2=10e-6` corresponde a $C_g$, por lo que la expresión implementada coincide con la función de transferencia indicada. La correspondencia con los bloques de Simulink debe comprobarse al ejecutar el modelo.
 
 ### 3. Representación dinámica
 
@@ -230,10 +230,10 @@ $$
 
 | Configuración | Valor |
 |---|---|
-| Tiempo total de simulación | $10\,\mathrm{s}$ |
+| Tiempo de simulación de MATLAB/Simulink | $10\,\mathrm{s}$ |
 | Solver de Simulink desde MATLAB | `ode15s` |
 | Paso máximo de Simulink | $10^{-3}\,\mathrm{s}$ |
-| Intervalo de Python | `0` a `10` s |
+| Intervalo calculado en Python | `0` a `15` s (gráfica mostrada de `0` a `10` s) |
 | Incremento del vector temporal Python | $10^{-3}\,\mathrm{s}$ |
 | Entrada | Pulso rectangular de amplitud 1, duración 1 s |
 
@@ -301,7 +301,7 @@ $$
 
 ### 2. Sintonización del controlador
 
-La sintonización del controlador PI se realizó mediante **PID Tuner**. La captura del ajuste presenta los siguientes parámetros:
+La sintonización del controlador PI se realizó mediante **PID Tuner**. La captura del ajuste presenta los siguientes parámetros, distintos de los utilizados en el archivo Python:
 
 | Parámetro | Valor |
 |---|---:|
@@ -309,6 +309,7 @@ La sintonización del controlador PI se realizó mediante **PID Tuner**. La capt
 | $K_i$ | $41303.6113$ |
 | $K_d$ | No aplica (PI) |
 
+![Parámetros y respuesta del controlador PI](Captura%20PI.png)
 
 En la respuesta **Tuned** de la captura se reportan aproximadamente $0.000583\,\mathrm{s}$ de tiempo de subida, $0.00102\,\mathrm{s}$ de establecimiento y $0.108\%$ de sobreimpulso, con estabilidad de lazo cerrado indicada como *Stable*. Estos indicadores corresponden a la respuesta de sintonización mostrada en la herramienta, no a una medición fisiológica.
 
@@ -320,7 +321,7 @@ $$
 T(s)=\frac{K(s)G_{\mathrm{caso}}(s)}{1+K(s)G_{\mathrm{caso}}(s)}.
 $$
 
-La salida controlada se calcula aplicando como entrada a $T(s)$ la **respuesta de referencia del individuo sano**, según el código suministrado.
+La salida controlada se calcula aplicando como entrada a $T(s)$ la **respuesta de referencia del individuo sano**, según el código suministrado. En el archivo Python se emplean $K_p=0.02149$ y $K_i=3714.6075$; estos valores deben distinguirse de los de la captura de PID Tuner.
 
 [Volver al contenido](#contenido)
 
@@ -331,7 +332,7 @@ La salida controlada se calcula aplicando como entrada a $T(s)$ la **respuesta d
 
 El archivo [`Vazquez23212242(1).py`](Vazquez23212242(1).py) reproduce la señal de entrada, construye las funciones de transferencia de ambas condiciones y obtiene sus respuestas mediante `python-control` y la función `forced_response`.
 
-El programa desarrolla las siguientes operaciones:
+El programa desarrolla las siguientes operaciones (simula hasta 15 s y muestra la gráfica hasta 10 s):
 
 1. Define $F_0$, $\alpha$, $C_g$, $C_p$, las dos resistencias y las ganancias PI.
 2. Construye el vector de tiempo con incremento de $1\,\mathrm{ms}$.
@@ -340,14 +341,14 @@ El programa desarrolla las siguientes operaciones:
 5. Simula ambas salidas en lazo abierto.
 6. Forma la función de transferencia del controlador PI y el lazo cerrado.
 7. Calcula la respuesta del tratamiento tomando como entrada la salida de referencia.
-8. Grafica las cuatro señales y guarda [`Control y Caso_Python.png`](Control y Caso_Python.png).
+8. Grafica las cuatro señales y guarda `impulso_unitario_python.pdf`. La imagen [`Control y Caso_Python.png`](Control%20y%20Caso_Python.png) se conserva como evidencia visual del resultado.
 
 ### Bibliotecas utilizadas
 
 ```python
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy import signal
+import control as ctrl
 ```
 
 Para repetir los resultados se deben conservar los valores de los parámetros y la misma señal de entrada en ambas plataformas.
@@ -394,7 +395,7 @@ Las figuras presentan la señal de entrada y las respuestas de la condición san
 | Entorno | Archivo |
 |---|---|
 | MATLAB/Simulink | [`Control y Caso_Matlab.pdf`](Control%20y%20Caso_Matlab.pdf) |
-| Python | [`Control y Caso_Python.png`](Control y Caso_Python.png) |
+| Python | [`Control y Caso_Python.png`](Control%20y%20Caso_Python.png) |
 | Configuración del PI | [`Captura PI.png`](Captura%20PI.png) |
 | Diagrama fisiológico | [`Biorender U4.jpeg`](Biorender U4.jpeg) |
 
@@ -406,7 +407,7 @@ La respuesta con PI se superpone aproximadamente a la referencia sana en las fig
 
 ### Consideraciones de verificación
 
-Las figuras de MATLAB y Python permiten una comparación visual. La comparación se realiza a partir de las respuestas temporales de referencia, caso simulado y tratamiento PI, así como de la estabilidad y el comportamiento transitorio observados.
+Las figuras de MATLAB y Python permiten una comparación visual. La comparación se realiza a partir de las respuestas temporales de referencia, caso simulado y tratamiento PI, así como de la estabilidad y el comportamiento transitorio observados. Las ganancias del PI de Python no son idénticas a las de la captura de PID Tuner, por lo que esta comparación es visual y no una validación numérica exacta entre ambas implementaciones.
 
 [Volver al contenido](#contenido)
 
@@ -466,14 +467,14 @@ El procedimiento reúne la interpretación fisiológica, el análisis de la anal
 - [x] Registrar las ganancias proporcional e integral.
 - [x] Implementar las funciones de transferencia en Python.
 - [x] Generar la figura con las cuatro señales.
-- [ ] Confirmar la discrepancia entre el coeficiente del numerador manuscrito y el implementado en Python.
+- [x] Comprobar que el numerador del archivo Python utiliza `C2=10e-6` como capacitancia equivalente del tendón.
 
 ### Etapa 4. Documentación
 
 - [x] Conservar los archivos del análisis, modelos, código y figuras.
 - [x] Organizar los resultados y la descripción de la práctica en este README.
-- [ ] Publicar los archivos en el repositorio de GitHub.
-- [ ] Incorporar `CITATION.cff` si se solicita en la entrega.
+- [x] Publicar los archivos en el repositorio de GitHub.
+- [x] Incorporar `CITATION.cff` para facilitar la cita académica del repositorio.
 
 [Volver al contenido](#contenido)
 
@@ -487,6 +488,7 @@ La siguiente estructura utiliza los **nombres reales de los archivos entregados*
 ```text
 .
 ├── README.md
+├── CITATION.cff
 ├── Analisis Matematico(1).pdf
 ├── Vazquez23212242(1).mlx
 ├── Vazquez23212242(1).pdf
@@ -498,7 +500,7 @@ La siguiente estructura utiliza los **nombres reales de los archivos entregados*
 └── Sistema(1).slx
 ```
 
-Se recomienda mantener estos archivos en la raíz del repositorio para que los enlaces relativos funcionen. El archivo `CITATION.cff` puede añadirse cuando se cuente con los datos definitivos del repositorio.
+Se recomienda mantener estos archivos en la raíz del repositorio para que los enlaces relativos funcionen. El archivo `CITATION.cff` incluye los metadatos de citación de esta práctica.
 
 [Volver al contenido](#contenido)
 
@@ -538,7 +540,7 @@ El modelo `Sistema(1).slx` debe estar disponible en la ruta de trabajo de MATLAB
 7. Instalar las dependencias de Python si no están disponibles.
 8. Ejecutar `Vazquez23212242(1).py` y generar la figura correspondiente.
 9. Comparar las gráficas de MATLAB y Python con los mismos parámetros.
-10. Verificar la diferencia entre las expresiones del numerador antes de presentar una validación algebraica definitiva.
+10. Confirmar la correspondencia entre el modelo de Simulink y la función de transferencia implementada en Python, así como las ganancias PI empleadas en cada entorno.
 
 ### Resultados y evidencias
 
@@ -548,10 +550,10 @@ El modelo `Sistema(1).slx` debe estar disponible en la ruta de trabajo de MATLAB
 | Modelo de Simulink | `Sistema(1).slx` |
 | MATLAB | Cuaderno `.mlx` y exportación `.pdf` |
 | Python | Código `.py` |
-| Sintonización PI | Captura `.jpg` |
-| Resultados gráficos | Dos archivos PDF comparativos |
-| Interpretación fisiológica | Diagrama BioRender `.png` |
-| Documentación | `README.md` |
+| Sintonización PI | Captura `.png` |
+| Resultados gráficos | Gráfica de MATLAB `.pdf` y gráfica de Python `.png` |
+| Interpretación fisiológica | Diagrama BioRender `.jpeg` |
+| Documentación y citación | `README.md` y `CITATION.cff` |
 
 ### Criterios de presentación académica
 
